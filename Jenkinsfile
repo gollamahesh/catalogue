@@ -1,6 +1,18 @@
 pipeline {
     agent { node { label 'AGENT-1' } }
+    environment{
+        //here if you create any variable you will have global access, since it is environment no need of def
+        packageVersion = ''
+    }
     stages {
+        stage('Get version'){
+            steps{
+                script{
+                    def packageJson = readJSON(file: 'package.json')
+                    packageVersion = packageJson.version
+                    echo "version: ${packageVersion}"
+                }
+            }
         stage('Install depdencies') {
             steps {
                 sh 'npm install'
@@ -24,6 +36,12 @@ pipeline {
                 sh 'zip -r catalogue.zip ./* --exclude=.git --exclude=.zip'
             }
         }
+        stage('SAST') {
+            steps {
+                echo "SAST Done"
+                echo "package version: $packageVersion"
+            }
+        }
         stage('Publish Artifact') {
             steps {
                 nexusArtifactUploader(
@@ -31,7 +49,7 @@ pipeline {
                     protocol: 'http',
                     nexusUrl: '3.86.91.79:8081/',
                     groupId: 'com.roboshop',
-                    version: '1.0.1',
+                    version: "$packageVersion",
                     repository: 'catalogue',
                     credentialsId: 'nexus-auth',
                     artifacts: [
