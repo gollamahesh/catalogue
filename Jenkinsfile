@@ -47,12 +47,14 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                echo "Deployment"
-                def params = [
-                    string(name: 'version', value: "$packageVersion")
-                ]
-                build job: "../catalogue-deploy", wait: true, parameters: params
+                script{
+                    echo "Deployment"
+                    def params = [
+                        string(name: 'version', value: "$packageVersion")
+                    ]
+                    build job: "../catalogue-deploy", wait: true, parameters: params
             }
+        }    
         }
     }
 
